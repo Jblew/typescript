@@ -10,8 +10,9 @@ declare module '@nuxt/types' {
     typescript?: Options
   }
 }
-
+console.log('>>>>>>>>> typescript-build-load')
 export interface Options {
+  tsconfigPath?: string
   ignoreNotFoundWarnings?: boolean
   loaders?: {
     ts?: Partial<TsLoaderOptions>
@@ -26,6 +27,8 @@ const defaults: Options = {
 }
 
 const tsModule: Module<Options> = function (moduleOptions) {
+  console.log('>>>>>>>>> typescript-build- module on')
+
   // Combine options
   const options = Object.assign(
     defaults,
@@ -54,6 +57,9 @@ const tsModule: Module<Options> = function (moduleOptions) {
 
     const jsxRuleLoaders = config.module!.rules.find(r => (r.test as RegExp).test('.jsx'))!.use as RuleSetUseItem[]
     const babelLoader = jsxRuleLoaders[jsxRuleLoaders.length - 1]
+    const configFile = this.options.tsconfigPath || 'tsconfig.json'
+    consola.withScope('nuxt:typescript').log({configFile})
+    throw new Error('Basta!: ' + configFile)
 
     config.module!.rules.push(...(['ts', 'tsx'] as const).map(ext =>
       ({
@@ -64,6 +70,7 @@ const tsModule: Module<Options> = function (moduleOptions) {
             loader: 'ts-loader',
             options: {
               transpileOnly: true,
+              configFile,
               [`append${ext.charAt(0).toUpperCase() + ext.slice(1)}SuffixTo`]: [/\.vue$/],
               ...(options.loaders && options.loaders[ext])
             }
@@ -74,9 +81,11 @@ const tsModule: Module<Options> = function (moduleOptions) {
 
     if (options.typeCheck && isClient && !isModern) {
       const ForkTsCheckerWebpackPlugin = require(this.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin'))
+      const tsconfigPathRelative = this.options.tsconfigPath || 'tsconfig.json'
+      consola.withScope('nuxt:typescript').log('Using tsconfig in ' + path.resolve(this.options.rootDir!, tsconfigPathRelative),)
       config.plugins!.push(new ForkTsCheckerWebpackPlugin(Object.assign({
         vue: true,
-        tsconfig: path.resolve(this.options.rootDir!, 'tsconfig.json'),
+        tsconfig: path.resolve(this.options.rootDir!, tsconfigPathRelative),
         formatter: 'codeframe',
         logger: consola.withScope('nuxt:typescript')
       }, options.typeCheck)))

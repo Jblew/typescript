@@ -1,6 +1,6 @@
 {
-  "name": "@nuxt/typescript-build",
-  "version": "0.5.6",
+  "name": "nuxt-typescript-build--fix-by-jblew-allow-custom-tsconfig",
+  "version": "0.5.9",
   "description": "Nuxt.js TypeScript support",
   "repository": "nuxt/typescript",
   "license": "MIT",
